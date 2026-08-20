@@ -1,0 +1,14 @@
+{
+  "name": "@saas/miniapp",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsc --noEmit --watch",
+    "build": "tsc --noEmit",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "5.2.3"
+  }
+}

@@ -1,0 +1,10 @@
+.next
+**/next-env.d.ts
+AGENTS.md
+coverage
+dist
+docs/archive
+docs/baseline
+node_modules
+packages/database/src/generated
+pnpm-lock.yaml

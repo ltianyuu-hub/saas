@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+  - packages/modules/*
+  - packages/integrations/*
+
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  unrs-resolver: true

@@ -1,0 +1,30 @@
+# Dependencies and package-manager artifacts
+node_modules/
+.pnpm-store/
+npm-cache/
+
+# Environment files (the public template is tracked)
+.env
+.env.*
+!.env.example
+
+# Build, test, and framework output
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+.cache/
+
+# Logs
+logs/
+*.log
+
+# Native mini-program generated dependencies
+miniprogram_npm/
+packages/database/src/generated/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

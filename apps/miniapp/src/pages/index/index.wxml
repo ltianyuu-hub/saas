@@ -1,0 +1,4 @@
+<view class="page">
+  <text class="title">Mini-program shell ready</text>
+  <text>Business bootstrap is not initialized.</text>
+</view>

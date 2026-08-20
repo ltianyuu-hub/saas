@@ -1,0 +1,1600 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../packages/database/src/generated/prisma"
+  moduleFormat    = "cjs"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MerchantStatus {
+  PENDING_SETUP
+  ACTIVE
+  SUSPENDED
+  FROZEN
+  TERMINATED
+}
+
+enum StoreStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum StaffStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  LEFT
+}
+
+enum StaffStoreAssignmentStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum PlatformAdminStatus {
+  ACTIVE
+  SUSPENDED
+  DISABLED
+}
+
+enum AuthSessionActorType {
+  CONSUMER
+  STAFF
+  PLATFORM
+}
+
+enum AuthSessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum MiniProgramConfigStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MiniProgramReleaseJobStatus {
+  PENDING
+  COMMITTING
+  EXPERIENCE_READY
+  AUDIT_SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  RELEASING
+  RELEASED
+  FAILED
+}
+
+enum ProductType {
+  GROUP_BUY
+}
+
+enum CampaignStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  ACTIVE
+  PAUSED
+  ENDED
+  TERMINATION_REQUESTED
+  TERMINATED
+}
+
+enum UsageRuleType {
+  FIXED_RANGE
+  AFTER_PURCHASE
+}
+
+enum InventoryMode {
+  LIMITED
+  UNLIMITED
+}
+
+enum InventoryScope {
+  CAMPAIGN
+}
+
+enum InventoryReservationStatus {
+  ACTIVE
+  CONSUMED
+  RELEASED
+}
+
+enum InventoryAdjustmentType {
+  MANUAL_INCREASE
+  MANUAL_DECREASE
+  SYSTEM_RESTORE
+  SYSTEM_CORRECTION
+}
+
+enum OrderType {
+  GROUP_BUY
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAYMENT_CONFIRMING
+  PAID
+  FULFILLING
+  FULFILLED
+  CLOSED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  CREATED
+  PROCESSING
+  CONFIRMING
+  SUCCESS
+  FAILED
+  CLOSED
+  EXCEPTION
+}
+
+enum VoucherStatus {
+  UNUSED
+  REDEEMING
+  REDEEMED
+  REFUNDING
+  REFUNDED
+  EXPIRED
+  VOID
+  REDEEM_REVERSAL_PENDING
+}
+
+enum VoucherStatusBeforeRefund {
+  UNUSED
+  EXPIRED
+  REDEEMED
+}
+
+enum RedemptionMethod {
+  QR
+  CODE
+}
+
+enum RedemptionStatus {
+  PROCESSING
+  SUCCESS
+  FAILED
+}
+
+enum RefundType {
+  NORMAL
+  EXPIRED_VOUCHER
+  DUPLICATE_PAYMENT
+  POST_REDEMPTION_EXCEPTION
+  MERCHANT_CLEARING
+}
+
+enum RefundStatus {
+  REQUESTED
+  POLICY_CHECKING
+  MANUAL_REVIEW
+  APPROVED
+  PROCESSING
+  CONFIRMING
+  SUCCESS
+  FAILED
+  REJECTED
+}
+
+enum EventOutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  DEAD_LETTER
+}
+
+enum RiskScene {
+  PRE_ORDER
+  PRE_PAYMENT
+  POST_PAYMENT
+  REFUND
+  REDEMPTION
+  MERCHANT
+  REVIEW
+}
+
+enum RiskAction {
+  ALLOW
+  REVIEW
+  BLOCK
+  ESCALATE
+}
+
+enum ExceptionType {
+  PAYMENT_MISMATCH
+  DUPLICATE_PAYMENT
+  PAYMENT_CONFIRM_TIMEOUT
+  VOUCHER_ISSUE_FAILED
+  VOUCHER_COUNT_MISMATCH
+  VOUCHER_OVER_ISSUED
+  REFUND_CONFIRM_TIMEOUT
+  REFUND_STATE_MISMATCH
+  INVENTORY_MISMATCH
+  INVENTORY_RESERVATION_LEAK
+  REDEMPTION_STATE_MISMATCH
+  FEE_CALCULATION_ERROR
+  RECONCILIATION_ERROR
+}
+
+enum ReconciliationType {
+  PAYMENT_ORDER
+  REFUND_VOUCHER
+  ORDER_VOUCHER
+  INVENTORY_ORDER
+  FEE_SETTLEMENT
+}
+
+enum IntegrationHealthStatus {
+  UNKNOWN
+  HEALTHY
+  DEGRADED
+  ERROR
+}
+
+model Merchant {
+  id                   String                      @id @default(uuid()) @db.Uuid
+  merchantCode         String                      @unique @map("merchant_code")
+  displayName          String                      @map("display_name")
+  legalEntityName      String                      @map("legal_entity_name")
+  businessLicenseNo    String?                     @map("business_license_no")
+  contactName          String                      @map("contact_name")
+  contactPhone         String                      @map("contact_phone")
+  status               MerchantStatus
+  createdAt            DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  brands               Brand[]
+  stores               Store[]
+  roles                Role[]
+  staff                Staff[]
+  merchantConsumers    MerchantConsumer[]
+  capability           MerchantCapability?
+  miniProgramAccounts  MiniProgramAccount[]
+  miniProgramConfigs   MiniProgramConfig[]
+  paymentAccounts      PaymentAccount[]
+  products             Product[]
+  campaigns            GroupBuyCampaign[]
+  campaignVersions     GroupBuyCampaignVersion[]
+  inventories          Inventory[]
+  reservations         InventoryReservation[]
+  inventoryAdjustments InventoryAdjustment[]
+  orders               Order[]
+  orderItems           OrderItem[]
+  payments             Payment[]
+  callbacks            IntegrationCallbackRecord[]
+  feeRecords           FeeRecord[]
+  feeReversals         FeeReversal[]
+  fulfillmentRecords   FulfillmentRecord[]
+  vouchers             Voucher[]
+  redemptions          Redemption[]
+  redemptionReversals  RedemptionReversal[]
+  refunds              Refund[]
+  refundItems          RefundItem[]
+  orderEvents          OrderEvent[]
+  outboxEvents         EventOutbox[]
+  riskEvents           RiskEvent[]
+  exceptionRecords     ExceptionRecord[]
+  auditLogs            AuditLog[]
+  securityEvents       SecurityEvent[]
+  releaseJobs          MiniProgramReleaseJob[]
+  disputeCases         DisputeCase[]
+  riskInvestigations   MerchantRiskInvestigation[]
+  clearingCases        MerchantClearingCase[]
+  integrationHealth    IntegrationHealth[]
+
+  @@map("merchant")
+}
+
+model Brand {
+  id                  String               @id @default(uuid()) @db.Uuid
+  merchantId          String               @map("merchant_id") @db.Uuid
+  brandCode           String               @map("brand_code")
+  name                String
+  logoFileId          String?              @map("logo_file_id") @db.Uuid
+  status              String
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant            Merchant             @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  stores              Store[]
+  miniProgramAccounts MiniProgramAccount[]
+  miniProgramConfigs  MiniProgramConfig[]
+  paymentAccounts     PaymentAccount[]
+  products            Product[]
+  campaigns           GroupBuyCampaign[]
+  orders              Order[]
+  vouchers            Voucher[]
+
+  @@unique([merchantId, brandCode])
+  @@unique([id, merchantId])
+  @@index([merchantId, status])
+  @@map("brand")
+}
+
+model Store {
+  id                String                 @id @default(uuid()) @db.Uuid
+  merchantId        String                 @map("merchant_id") @db.Uuid
+  brandId           String                 @map("brand_id") @db.Uuid
+  storeCode         String                 @map("store_code")
+  name              String
+  address           String
+  longitude         Decimal?               @db.Decimal(10, 7)
+  latitude          Decimal?               @db.Decimal(10, 7)
+  contactPhone      String?                @map("contact_phone")
+  businessHoursJson Json?                  @map("business_hours_json") @db.JsonB
+  status            StoreStatus
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant          Merchant               @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand             Brand                  @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  primaryStaff      Staff[]
+  staffAssignments  StaffStoreAssignment[]
+  campaignStores    CampaignStore[]
+  redeemedVouchers  Voucher[]              @relation("VoucherRedeemedStore")
+  redemptions       Redemption[]
+
+  @@unique([merchantId, storeCode])
+  @@unique([id, merchantId])
+  @@index([merchantId, brandId, status])
+  @@map("store")
+}
+
+model Permission {
+  id              String           @id @default(uuid()) @db.Uuid
+  permissionCode  String           @unique @map("permission_code")
+  name            String
+  description     String?
+  rolePermissions RolePermission[]
+
+  @@map("permission")
+}
+
+model Role {
+  id              String           @id @default(uuid()) @db.Uuid
+  merchantId      String?          @map("merchant_id") @db.Uuid
+  roleCode        String           @map("role_code")
+  name            String
+  description     String?
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant        Merchant?        @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  rolePermissions RolePermission[]
+  staff           Staff[]
+  platformAdmins  PlatformAdmin[]
+
+  @@unique([id, merchantId])
+  @@unique([roleCode], map: "role_platform_code_key", where: raw("merchant_id IS NULL"))
+  @@unique([merchantId, roleCode], map: "role_merchant_code_key", where: raw("merchant_id IS NOT NULL"))
+  @@map("role")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@id([roleId, permissionId])
+  @@map("role_permission")
+}
+
+model Staff {
+  id                String                 @id @default(uuid()) @db.Uuid
+  merchantId        String                 @map("merchant_id") @db.Uuid
+  primaryStoreId    String?                @map("primary_store_id") @db.Uuid
+  roleId            String                 @map("role_id") @db.Uuid
+  staffCode         String                 @map("staff_code")
+  displayName       String                 @map("display_name")
+  status            StaffStatus
+  permissionVersion Int                    @default(1) @map("permission_version")
+  version           Int                    @default(1)
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant          Merchant               @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  primaryStore      Store?                 @relation(fields: [primaryStoreId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  role              Role                   @relation(fields: [roleId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  identities        StaffIdentity[]
+  storeAssignments  StaffStoreAssignment[]
+  authSessions      AuthSession[]
+  redemptions       Redemption[]
+
+  @@unique([merchantId, staffCode])
+  @@unique([id, merchantId])
+  @@index([merchantId, status])
+  @@map("staff")
+}
+
+model StaffStoreAssignment {
+  id         String                     @id @default(uuid()) @db.Uuid
+  merchantId String                     @map("merchant_id") @db.Uuid
+  staffId    String                     @map("staff_id") @db.Uuid
+  storeId    String                     @map("store_id") @db.Uuid
+  status     StaffStoreAssignmentStatus
+  createdAt  DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  staff      Staff                      @relation(fields: [staffId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  store      Store                      @relation(fields: [storeId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@unique([staffId, storeId])
+  @@index([merchantId, staffId, status])
+  @@index([merchantId, storeId, status])
+  @@map("staff_store_assignment")
+}
+
+model StaffIdentity {
+  id                String   @id @default(uuid()) @db.Uuid
+  staffId           String   @map("staff_id") @db.Uuid
+  provider          String
+  appId             String   @map("app_id")
+  providerSubjectId String   @map("provider_subject_id")
+  status            String
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  staff             Staff    @relation(fields: [staffId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, appId, providerSubjectId])
+  @@index([staffId, status])
+  @@map("staff_identity")
+}
+
+model Consumer {
+  id                 String             @id @default(uuid()) @db.Uuid
+  status             String
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  externalIdentities ExternalIdentity[]
+  merchants          MerchantConsumer[]
+  orders             Order[]
+  payments           Payment[]
+  purchasedVouchers  Voucher[]          @relation("VoucherPurchaser")
+  heldVouchers       Voucher[]          @relation("VoucherHolder")
+  refunds            Refund[]
+  authSessions       AuthSession[]
+
+  @@map("consumer")
+}
+
+model PlatformAdmin {
+  id                String                  @id @default(uuid()) @db.Uuid
+  adminCode         String                  @unique @map("admin_code")
+  displayName       String                  @map("display_name")
+  status            PlatformAdminStatus
+  roleId            String                  @map("role_id") @db.Uuid
+  permissionVersion Int                     @default(1) @map("permission_version")
+  createdAt         DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  role              Role                    @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  identities        PlatformAdminIdentity[]
+  authSessions      AuthSession[]
+
+  @@index([status])
+  @@map("platform_admin")
+}
+
+model PlatformAdminIdentity {
+  id                String        @id @default(uuid()) @db.Uuid
+  platformAdminId   String        @map("platform_admin_id") @db.Uuid
+  provider          String
+  providerSubjectId String        @map("provider_subject_id")
+  status            String
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  platformAdmin     PlatformAdmin @relation(fields: [platformAdminId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, providerSubjectId])
+  @@index([platformAdminId, status])
+  @@map("platform_admin_identity")
+}
+
+model AuthSession {
+  id                        String               @id @default(uuid()) @db.Uuid
+  actorType                 AuthSessionActorType @map("actor_type")
+  consumerId                String?              @map("consumer_id") @db.Uuid
+  staffId                   String?              @map("staff_id") @db.Uuid
+  platformAdminId           String?              @map("platform_admin_id") @db.Uuid
+  tokenHash                 String               @unique @map("token_hash")
+  status                    AuthSessionStatus
+  permissionVersionSnapshot Int                  @map("permission_version_snapshot")
+  issuedAt                  DateTime             @map("issued_at") @db.Timestamptz(6)
+  expiresAt                 DateTime             @map("expires_at") @db.Timestamptz(6)
+  revokedAt                 DateTime?            @map("revoked_at") @db.Timestamptz(6)
+  lastSeenAt                DateTime?            @map("last_seen_at") @db.Timestamptz(6)
+  createdAt                 DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
+  consumer                  Consumer?            @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  staff                     Staff?               @relation(fields: [staffId], references: [id], onDelete: Restrict)
+  platformAdmin             PlatformAdmin?       @relation(fields: [platformAdminId], references: [id], onDelete: Restrict)
+
+  @@index([actorType, status, expiresAt])
+  @@index([consumerId, status])
+  @@index([staffId, status])
+  @@index([platformAdminId, status])
+  @@map("auth_session")
+}
+
+model ExternalIdentity {
+  id                String   @id @default(uuid()) @db.Uuid
+  consumerId        String   @map("consumer_id") @db.Uuid
+  provider          String
+  appId             String   @map("app_id")
+  providerSubjectId String   @map("provider_subject_id")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  consumer          Consumer @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, appId, providerSubjectId])
+  @@index([consumerId])
+  @@map("external_identity")
+}
+
+model MerchantConsumer {
+  id          String   @id @default(uuid()) @db.Uuid
+  merchantId  String   @map("merchant_id") @db.Uuid
+  consumerId  String   @map("consumer_id") @db.Uuid
+  status      String
+  firstSeenAt DateTime @default(now()) @map("first_seen_at") @db.Timestamptz(6)
+  lastSeenAt  DateTime @map("last_seen_at") @db.Timestamptz(6)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  consumer    Consumer @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+
+  @@unique([merchantId, consumerId])
+  @@index([consumerId])
+  @@map("merchant_consumer")
+}
+
+model MerchantCapability {
+  merchantId        String   @id @map("merchant_id") @db.Uuid
+  canCreateProduct  Boolean  @default(false) @map("can_create_product")
+  canPublishProduct Boolean  @default(false) @map("can_publish_product")
+  canAcceptOrder    Boolean  @default(false) @map("can_accept_order")
+  canAcceptPayment  Boolean  @default(false) @map("can_accept_payment")
+  canRedeemVoucher  Boolean  @default(false) @map("can_redeem_voucher")
+  canProcessRefund  Boolean  @default(false) @map("can_process_refund")
+  version           Int      @default(1)
+  merchant          Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@map("merchant_capability")
+}
+
+model MiniProgramAccount {
+  id                     String                     @id @default(uuid()) @db.Uuid
+  merchantId             String                     @map("merchant_id") @db.Uuid
+  brandId                String                     @map("brand_id") @db.Uuid
+  appId                  String                     @unique @map("app_id")
+  authorizationStatus    String                     @map("authorization_status")
+  developmentStatus      String                     @map("development_status")
+  auditStatus            String                     @map("audit_status")
+  releaseStatus          String                     @map("release_status")
+  overallStatus          String                     @map("overall_status")
+  currentTemplateVersion String?                    @map("current_template_version")
+  releasedVersion        String?                    @map("released_version")
+  currentConfigVersion   Int?                       @map("current_config_version")
+  createdAt              DateTime                   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant               Merchant                   @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                  Brand                      @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  authorizations         MiniProgramAuthorization[]
+  configs                MiniProgramConfig[]
+  releaseJobs            MiniProgramReleaseJob[]
+  paymentAccounts        PaymentAccount[]
+
+  @@unique([id, merchantId])
+  @@index([merchantId, overallStatus])
+  @@map("mini_program_account")
+}
+
+model MiniProgramAuthorization {
+  id                     String             @id @default(uuid()) @db.Uuid
+  miniProgramAccountId   String             @map("mini_program_account_id") @db.Uuid
+  authorizationStatus    String             @map("authorization_status")
+  authorizationScopeJson Json               @map("authorization_scope_json") @db.JsonB
+  credentialRef          String             @map("credential_ref")
+  authorizedAt           DateTime           @map("authorized_at") @db.Timestamptz(6)
+  refreshedAt            DateTime?          @map("refreshed_at") @db.Timestamptz(6)
+  revokedAt              DateTime?          @map("revoked_at") @db.Timestamptz(6)
+  account                MiniProgramAccount @relation(fields: [miniProgramAccountId], references: [id], onDelete: Restrict)
+
+  @@unique([miniProgramAccountId], map: "mini_program_authorization_active_key", where: raw("authorization_status = 'ACTIVE'"))
+  @@index([miniProgramAccountId, authorizedAt])
+  @@map("mini_program_authorization")
+}
+
+model MiniProgramConfig {
+  id                   String                  @id @default(uuid()) @db.Uuid
+  miniProgramAccountId String                  @map("mini_program_account_id") @db.Uuid
+  merchantId           String                  @map("merchant_id") @db.Uuid
+  brandId              String                  @map("brand_id") @db.Uuid
+  configVersion        Int                     @map("config_version")
+  configJson           Json                    @map("config_json") @db.JsonB
+  status               MiniProgramConfigStatus
+  publishedAt          DateTime?               @map("published_at") @db.Timestamptz(6)
+  createdAt            DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant             Merchant                @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                Brand                   @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  account              MiniProgramAccount      @relation(fields: [miniProgramAccountId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@unique([miniProgramAccountId, configVersion])
+  @@index([merchantId, status])
+  @@map("mini_program_config")
+}
+
+model FeatureFlag {
+  id          String  @id @default(uuid()) @db.Uuid
+  scopeType   String  @map("scope_type")
+  scopeId     String  @map("scope_id") @db.Uuid
+  featureCode String  @map("feature_code")
+  enabled     Boolean @default(false)
+  configJson  Json?   @map("config_json") @db.JsonB
+
+  @@unique([scopeType, scopeId, featureCode])
+  @@map("feature_flag")
+}
+
+model MiniProgramTemplate {
+  id              String                  @id @default(uuid()) @db.Uuid
+  templateId      String                  @map("template_id")
+  templateVersion String                  @map("template_version")
+  sourceDraftId   String?                 @map("source_draft_id")
+  status          String
+  description     String?
+  releaseJobs     MiniProgramReleaseJob[]
+
+  @@unique([templateId, templateVersion])
+  @@map("mini_program_template")
+}
+
+model MiniProgramReleaseJob {
+  id                   String                      @id @default(uuid()) @db.Uuid
+  miniProgramAccountId String                      @map("mini_program_account_id") @db.Uuid
+  merchantId           String                      @map("merchant_id") @db.Uuid
+  templateRecordId     String                      @map("template_record_id") @db.Uuid
+  templateId           String                      @map("template_id")
+  templateVersion      String                      @map("template_version")
+  configVersion        Int                         @map("config_version")
+  auditId              String?                     @map("audit_id")
+  status               MiniProgramReleaseJobStatus
+  attemptCount         Int                         @default(0) @map("attempt_count")
+  lastError            String?                     @map("last_error")
+  createdAt            DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  account              MiniProgramAccount          @relation(fields: [miniProgramAccountId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  merchant             Merchant                    @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  template             MiniProgramTemplate         @relation(fields: [templateRecordId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, status, createdAt])
+  @@index([miniProgramAccountId, status])
+  @@map("mini_program_release_job")
+}
+
+model PaymentAccount {
+  id                      String             @id @default(uuid()) @db.Uuid
+  merchantId              String             @map("merchant_id") @db.Uuid
+  brandId                 String             @map("brand_id") @db.Uuid
+  miniProgramAccountId    String             @map("mini_program_account_id") @db.Uuid
+  provider                String
+  spMchid                 String             @map("sp_mchid")
+  subMchid                String?            @map("sub_mchid")
+  subAppid                String             @map("sub_appid")
+  onboardingStatus        String             @map("onboarding_status")
+  appidBindingStatus      String             @map("appid_binding_status")
+  paymentPermissionStatus String             @map("payment_permission_status")
+  status                  String
+  credentialRef           String             @map("credential_ref")
+  createdAt               DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant                Merchant           @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                   Brand              @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  miniProgramAccount      MiniProgramAccount @relation(fields: [miniProgramAccountId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  payments                Payment[]
+
+  @@unique([id, merchantId])
+  @@unique([provider, subMchid], map: "payment_account_provider_sub_mchid_key", where: raw("sub_mchid IS NOT NULL"))
+  @@index([merchantId, status])
+  @@map("payment_account")
+}
+
+model Product {
+  id                        String             @id @default(uuid()) @db.Uuid
+  merchantId                String             @map("merchant_id") @db.Uuid
+  brandId                   String             @map("brand_id") @db.Uuid
+  productCode               String             @map("product_code")
+  productType               ProductType        @map("product_type")
+  status                    String
+  currentPublishedVersionId String?            @map("current_published_version_id") @db.Uuid
+  createdAt                 DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant                  Merchant           @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                     Brand              @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  versions                  ProductVersion[]   @relation("ProductVersions")
+  currentPublishedVersion   ProductVersion?    @relation("CurrentProductVersion", fields: [currentPublishedVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  campaigns                 GroupBuyCampaign[]
+  orderItems                OrderItem[]
+
+  @@unique([merchantId, productCode])
+  @@unique([id, merchantId])
+  @@index([merchantId, brandId, status])
+  @@map("product")
+}
+
+model ProductVersion {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  productId          String                    @map("product_id") @db.Uuid
+  merchantId         String                    @map("merchant_id") @db.Uuid
+  versionNo          Int                       @map("version_no")
+  title              String
+  subtitle           String?
+  description        String?
+  status             String
+  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  product            Product                   @relation("ProductVersions", fields: [productId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  currentForProducts Product[]                 @relation("CurrentProductVersion")
+  packageItems       PackageItem[]
+  media              ProductMedia[]
+  campaignVersions   GroupBuyCampaignVersion[]
+  orderItems         OrderItem[]
+  vouchers           Voucher[]
+
+  @@unique([productId, versionNo])
+  @@unique([id, merchantId])
+  @@unique([productId], map: "product_version_published_key", where: raw("status = 'PUBLISHED'"))
+  @@index([merchantId, status])
+  @@map("product_version")
+}
+
+model PackageItem {
+  id               String         @id @default(uuid()) @db.Uuid
+  productVersionId String         @map("product_version_id") @db.Uuid
+  itemName         String         @map("item_name")
+  quantity         Int
+  unit             String
+  referencePrice   BigInt?        @map("reference_price") @db.BigInt
+  description      String?
+  sortOrder        Int            @default(0) @map("sort_order")
+  productVersion   ProductVersion @relation(fields: [productVersionId], references: [id], onDelete: Restrict)
+
+  @@index([productVersionId, sortOrder])
+  @@map("package_item")
+}
+
+model ProductMedia {
+  id               String         @id @default(uuid()) @db.Uuid
+  productVersionId String         @map("product_version_id") @db.Uuid
+  fileId           String         @map("file_id") @db.Uuid
+  mediaType        String         @map("media_type")
+  sortOrder        Int            @default(0) @map("sort_order")
+  productVersion   ProductVersion @relation(fields: [productVersionId], references: [id], onDelete: Restrict)
+
+  @@index([productVersionId, sortOrder])
+  @@map("product_media")
+}
+
+model GroupBuyCampaign {
+  id                        String                    @id @default(uuid()) @db.Uuid
+  merchantId                String                    @map("merchant_id") @db.Uuid
+  brandId                   String                    @map("brand_id") @db.Uuid
+  productId                 String                    @map("product_id") @db.Uuid
+  campaignCode              String                    @map("campaign_code")
+  status                    CampaignStatus
+  currentPublishedVersionId String?                   @map("current_published_version_id") @db.Uuid
+  pendingVersionId          String?                   @map("pending_version_id") @db.Uuid
+  createdAt                 DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                 DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant                  Merchant                  @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                     Brand                     @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  product                   Product                   @relation(fields: [productId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  versions                  GroupBuyCampaignVersion[] @relation("CampaignVersions")
+  currentPublishedVersion   GroupBuyCampaignVersion?  @relation("CurrentCampaignVersion", fields: [currentPublishedVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  pendingVersion            GroupBuyCampaignVersion?  @relation("PendingCampaignVersion", fields: [pendingVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  purchaseLimitRule         PurchaseLimitRule?
+  inventory                 Inventory?
+  orderItems                OrderItem[]
+  vouchers                  Voucher[]
+
+  @@unique([merchantId, campaignCode])
+  @@unique([id, merchantId])
+  @@index([merchantId, brandId, status])
+  @@map("group_buy_campaign")
+}
+
+model GroupBuyCampaignVersion {
+  id                  String             @id @default(uuid()) @db.Uuid
+  campaignId          String             @map("campaign_id") @db.Uuid
+  merchantId          String             @map("merchant_id") @db.Uuid
+  productVersionId    String             @map("product_version_id") @db.Uuid
+  versionNo           Int                @map("version_no")
+  referencePrice      BigInt             @map("reference_price") @db.BigInt
+  salePrice           BigInt             @map("sale_price") @db.BigInt
+  currency            String             @db.Char(3)
+  saleStartAt         DateTime           @map("sale_start_at") @db.Timestamptz(6)
+  saleEndAt           DateTime           @map("sale_end_at") @db.Timestamptz(6)
+  storeScope          String             @map("store_scope")
+  refundPolicyCode    String             @map("refund_policy_code")
+  expiryPolicyCode    String             @map("expiry_policy_code")
+  reservationRequired Boolean            @map("reservation_required")
+  status              String
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  campaign            GroupBuyCampaign   @relation("CampaignVersions", fields: [campaignId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  currentForCampaigns GroupBuyCampaign[] @relation("CurrentCampaignVersion")
+  pendingForCampaigns GroupBuyCampaign[] @relation("PendingCampaignVersion")
+  productVersion      ProductVersion     @relation(fields: [productVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  campaignStores      CampaignStore[]
+  usageRule           UsageRule?
+  orderItems          OrderItem[]
+  vouchers            Voucher[]
+  merchant            Merchant           @relation(fields: [merchantId], references: [id])
+
+  @@unique([campaignId, versionNo])
+  @@unique([id, merchantId])
+  @@unique([campaignId], map: "campaign_version_published_key", where: raw("status = 'PUBLISHED'"))
+  @@index([merchantId, status])
+  @@map("group_buy_campaign_version")
+}
+
+model CampaignStore {
+  campaignVersionId String                  @map("campaign_version_id") @db.Uuid
+  storeId           String                  @map("store_id") @db.Uuid
+  merchantId        String                  @map("merchant_id") @db.Uuid
+  campaignVersion   GroupBuyCampaignVersion @relation(fields: [campaignVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  store             Store                   @relation(fields: [storeId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@id([campaignVersionId, storeId])
+  @@index([merchantId, storeId])
+  @@map("campaign_store")
+}
+
+model UsageRule {
+  id                     String                  @id @default(uuid()) @db.Uuid
+  campaignVersionId      String                  @unique @map("campaign_version_id") @db.Uuid
+  ruleType               UsageRuleType           @map("rule_type")
+  fixedValidFrom         DateTime?               @map("fixed_valid_from") @db.Timestamptz(6)
+  fixedValidUntil        DateTime?               @map("fixed_valid_until") @db.Timestamptz(6)
+  validDaysAfterPurchase Int?                    @map("valid_days_after_purchase")
+  campaignVersion        GroupBuyCampaignVersion @relation(fields: [campaignVersionId], references: [id], onDelete: Restrict)
+  weeklyRules            UsageWeeklyTimeRule[]
+  blackoutDates          UsageBlackoutDate[]
+
+  @@map("usage_rule")
+}
+
+model UsageWeeklyTimeRule {
+  id          String    @id @default(uuid()) @db.Uuid
+  usageRuleId String    @map("usage_rule_id") @db.Uuid
+  weekday     Int
+  allDay      Boolean   @map("all_day")
+  startTime   DateTime? @map("start_time") @db.Time(6)
+  endTime     DateTime? @map("end_time") @db.Time(6)
+  enabled     Boolean   @default(true)
+  usageRule   UsageRule @relation(fields: [usageRuleId], references: [id], onDelete: Restrict)
+
+  @@unique([usageRuleId, weekday])
+  @@map("usage_weekly_time_rule")
+}
+
+model UsageBlackoutDate {
+  id          String    @id @default(uuid()) @db.Uuid
+  usageRuleId String    @map("usage_rule_id") @db.Uuid
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime  @map("end_date") @db.Date
+  reason      String?
+  usageRule   UsageRule @relation(fields: [usageRuleId], references: [id], onDelete: Restrict)
+
+  @@index([usageRuleId, startDate, endDate])
+  @@map("usage_blackout_date")
+}
+
+model PurchaseLimitRule {
+  id                String           @id @default(uuid()) @db.Uuid
+  campaignId        String           @unique @map("campaign_id") @db.Uuid
+  singleOrderLimit  Int?             @map("single_order_limit")
+  campaignUserLimit Int?             @map("campaign_user_limit")
+  status            String
+  campaign          GroupBuyCampaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+
+  @@map("purchase_limit_rule")
+}
+
+model Inventory {
+  id                String                 @id @default(uuid()) @db.Uuid
+  merchantId        String                 @map("merchant_id") @db.Uuid
+  campaignId        String                 @map("campaign_id") @db.Uuid
+  inventoryMode     InventoryMode          @map("inventory_mode")
+  inventoryScope    InventoryScope         @map("inventory_scope")
+  totalStock        Int?                   @map("total_stock")
+  reservedStock     Int                    @default(0) @map("reserved_stock")
+  soldStock         Int                    @default(0) @map("sold_stock")
+  lowStockThreshold Int?                   @map("low_stock_threshold")
+  version           Int                    @default(1)
+  createdAt         DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant          Merchant               @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  campaign          GroupBuyCampaign       @relation(fields: [campaignId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  reservations      InventoryReservation[]
+  adjustments       InventoryAdjustment[]
+
+  @@unique([id, merchantId])
+  @@unique([campaignId, merchantId])
+  @@index([merchantId, inventoryMode])
+  @@map("inventory")
+}
+
+model InventoryReservation {
+  id             String                     @id @default(uuid()) @db.Uuid
+  reservationNo  String                     @unique @map("reservation_no")
+  merchantId     String                     @map("merchant_id") @db.Uuid
+  inventoryId    String                     @map("inventory_id") @db.Uuid
+  orderId        String                     @map("order_id") @db.Uuid
+  quantity       Int
+  status         InventoryReservationStatus
+  idempotencyKey String                     @map("idempotency_key")
+  reservedAt     DateTime                   @map("reserved_at") @db.Timestamptz(6)
+  expiresAt      DateTime                   @map("expires_at") @db.Timestamptz(6)
+  consumedAt     DateTime?                  @map("consumed_at") @db.Timestamptz(6)
+  releasedAt     DateTime?                  @map("released_at") @db.Timestamptz(6)
+  releaseReason  String?                    @map("release_reason")
+  merchant       Merchant                   @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  inventory      Inventory                  @relation(fields: [inventoryId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  order          Order                      @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@unique([orderId, inventoryId])
+  @@unique([merchantId, idempotencyKey])
+  @@index([merchantId, status, expiresAt])
+  @@map("inventory_reservation")
+}
+
+model InventoryAdjustment {
+  id             String                  @id @default(uuid()) @db.Uuid
+  merchantId     String                  @map("merchant_id") @db.Uuid
+  inventoryId    String                  @map("inventory_id") @db.Uuid
+  adjustmentType InventoryAdjustmentType @map("adjustment_type")
+  quantity       Int
+  reason         String
+  actorType      String                  @map("actor_type")
+  actorId        String?                 @map("actor_id") @db.Uuid
+  createdAt      DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant       Merchant                @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  inventory      Inventory               @relation(fields: [inventoryId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@index([merchantId, inventoryId, createdAt])
+  @@map("inventory_adjustment")
+}
+
+model Order {
+  id                     String                 @id @default(uuid()) @db.Uuid
+  orderNo                String                 @unique @map("order_no")
+  merchantId             String                 @map("merchant_id") @db.Uuid
+  brandId                String                 @map("brand_id") @db.Uuid
+  consumerId             String                 @map("consumer_id") @db.Uuid
+  orderType              OrderType              @map("order_type")
+  status                 OrderStatus
+  originalAmount         BigInt                 @map("original_amount") @db.BigInt
+  merchantDiscountAmount BigInt                 @default(0) @map("merchant_discount_amount") @db.BigInt
+  platformDiscountAmount BigInt                 @default(0) @map("platform_discount_amount") @db.BigInt
+  otherDiscountAmount    BigInt                 @default(0) @map("other_discount_amount") @db.BigInt
+  payableAmount          BigInt                 @map("payable_amount") @db.BigInt
+  currency               String                 @db.Char(3)
+  paymentDeadlineAt      DateTime               @map("payment_deadline_at") @db.Timestamptz(6)
+  version                Int                    @default(1)
+  createdAt              DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  paidAt                 DateTime?              @map("paid_at") @db.Timestamptz(6)
+  fulfilledAt            DateTime?              @map("fulfilled_at") @db.Timestamptz(6)
+  closedAt               DateTime?              @map("closed_at") @db.Timestamptz(6)
+  updatedAt              DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant               Merchant               @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                  Brand                  @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  consumer               Consumer               @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  items                  OrderItem[]
+  reservations           InventoryReservation[]
+  payments               Payment[]
+  feeRecords             FeeRecord[]
+  fulfillmentRecords     FulfillmentRecord[]
+  vouchers               Voucher[]
+  redemptions            Redemption[]
+  refunds                Refund[]
+  events                 OrderEvent[]
+
+  @@unique([id, merchantId])
+  @@index([merchantId, consumerId, createdAt])
+  @@index([merchantId, status, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                       String                  @id @default(uuid()) @db.Uuid
+  orderId                  String                  @map("order_id") @db.Uuid
+  merchantId               String                  @map("merchant_id") @db.Uuid
+  productId                String                  @map("product_id") @db.Uuid
+  productVersionId         String                  @map("product_version_id") @db.Uuid
+  campaignId               String                  @map("campaign_id") @db.Uuid
+  campaignVersionId        String                  @map("campaign_version_id") @db.Uuid
+  productNameSnapshot      String                  @map("product_name_snapshot")
+  unitPriceSnapshot        BigInt                  @map("unit_price_snapshot") @db.BigInt
+  quantity                 Int
+  subtotalAmount           BigInt                  @map("subtotal_amount") @db.BigInt
+  packageSnapshotJson      Json                    @map("package_snapshot_json") @db.JsonB
+  usageRuleSnapshotJson    Json                    @map("usage_rule_snapshot_json") @db.JsonB
+  refundPolicySnapshotJson Json                    @map("refund_policy_snapshot_json") @db.JsonB
+  expiryPolicySnapshotJson Json                    @map("expiry_policy_snapshot_json") @db.JsonB
+  order                    Order                   @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  product                  Product                 @relation(fields: [productId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  productVersion           ProductVersion          @relation(fields: [productVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  campaign                 GroupBuyCampaign        @relation(fields: [campaignId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  campaignVersion          GroupBuyCampaignVersion @relation(fields: [campaignVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  fulfillmentRecords       FulfillmentRecord[]
+  vouchers                 Voucher[]
+  refundItems              RefundItem[]
+  merchant                 Merchant                @relation(fields: [merchantId], references: [id])
+
+  @@unique([id, merchantId])
+  @@index([merchantId, orderId])
+  @@map("order_item")
+}
+
+model Payment {
+  id                    String         @id @default(uuid()) @db.Uuid
+  paymentNo             String         @unique @map("payment_no")
+  merchantId            String         @map("merchant_id") @db.Uuid
+  orderId               String         @map("order_id") @db.Uuid
+  consumerId            String         @map("consumer_id") @db.Uuid
+  paymentAccountId      String         @map("payment_account_id") @db.Uuid
+  provider              String
+  status                PaymentStatus
+  effectiveForOrder     Boolean        @default(false) @map("effective_for_order")
+  amount                BigInt         @db.BigInt
+  currency              String         @db.Char(3)
+  providerTransactionId String?        @map("provider_transaction_id")
+  idempotencyKey        String         @map("idempotency_key")
+  version               Int            @default(1)
+  createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  succeededAt           DateTime?      @map("succeeded_at") @db.Timestamptz(6)
+  merchant              Merchant       @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  order                 Order          @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  consumer              Consumer       @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  paymentAccount        PaymentAccount @relation(fields: [paymentAccountId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  feeRecords            FeeRecord[]
+  refunds               Refund[]
+
+  @@unique([provider, providerTransactionId])
+  @@unique([merchantId, idempotencyKey])
+  @@unique([orderId], map: "payment_effective_success_key", where: raw("status = 'SUCCESS' AND effective_for_order = true"))
+  @@unique([id, merchantId])
+  @@unique([id, orderId, merchantId], map: "payment_id_order_id_merchant_id_key")
+  @@index([merchantId, orderId, status])
+  @@index([merchantId, status, createdAt])
+  @@map("payment")
+}
+
+model IntegrationCallbackRecord {
+  id                    String    @id @default(uuid()) @db.Uuid
+  provider              String
+  callbackType          String    @map("callback_type")
+  merchantId            String?   @map("merchant_id") @db.Uuid
+  externalEventId       String?   @map("external_event_id")
+  externalTransactionId String?   @map("external_transaction_id")
+  verificationStatus    String    @map("verification_status")
+  processingStatus      String    @map("processing_status")
+  requestDigest         String    @map("request_digest")
+  receivedAt            DateTime  @default(now()) @map("received_at") @db.Timestamptz(6)
+  processedAt           DateTime? @map("processed_at") @db.Timestamptz(6)
+  merchant              Merchant? @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, callbackType, externalEventId])
+  @@index([provider, externalTransactionId])
+  @@index([processingStatus, receivedAt])
+  @@map("integration_callback_record")
+}
+
+model FeePolicy {
+  id             String      @id @default(uuid()) @db.Uuid
+  scopeType      String      @map("scope_type")
+  scopeId        String      @map("scope_id") @db.Uuid
+  feeType        String      @map("fee_type")
+  rateValue      Int         @map("rate_value")
+  rateScale      String      @map("rate_scale")
+  priority       Int         @default(0)
+  effectiveFrom  DateTime    @map("effective_from") @db.Timestamptz(6)
+  effectiveUntil DateTime?   @map("effective_until") @db.Timestamptz(6)
+  status         String
+  feeRecords     FeeRecord[]
+
+  @@index([scopeType, scopeId, feeType, status])
+  @@map("fee_policy")
+}
+
+model FeeRecord {
+  id                String        @id @default(uuid()) @db.Uuid
+  merchantId        String        @map("merchant_id") @db.Uuid
+  orderId           String        @map("order_id") @db.Uuid
+  paymentId         String        @map("payment_id") @db.Uuid
+  feePolicyId       String        @map("fee_policy_id") @db.Uuid
+  feeType           String        @map("fee_type")
+  baseAmount        BigInt        @map("base_amount") @db.BigInt
+  rateValueSnapshot Int           @map("rate_value_snapshot")
+  rateScaleSnapshot String        @map("rate_scale_snapshot")
+  feeAmount         BigInt        @map("fee_amount") @db.BigInt
+  status            String
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant          Merchant      @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  order             Order         @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  payment           Payment       @relation(fields: [paymentId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  feePolicy         FeePolicy     @relation(fields: [feePolicyId], references: [id], onDelete: Restrict)
+  reversals         FeeReversal[]
+
+  @@unique([paymentId, feeType])
+  @@unique([id, merchantId])
+  @@index([merchantId, createdAt])
+  @@map("fee_record")
+}
+
+model FeeReversal {
+  id               String    @id @default(uuid()) @db.Uuid
+  merchantId       String    @map("merchant_id") @db.Uuid
+  feeRecordId      String    @map("fee_record_id") @db.Uuid
+  refundId         String    @map("refund_id") @db.Uuid
+  baseRefundAmount BigInt    @map("base_refund_amount") @db.BigInt
+  reversalAmount   BigInt    @map("reversal_amount") @db.BigInt
+  status           String
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant         Merchant  @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  feeRecord        FeeRecord @relation(fields: [feeRecordId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  refund           Refund    @relation(fields: [refundId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@unique([feeRecordId, refundId])
+  @@index([merchantId])
+  @@map("fee_reversal")
+}
+
+model FulfillmentRecord {
+  id               String    @id @default(uuid()) @db.Uuid
+  merchantId       String    @map("merchant_id") @db.Uuid
+  orderId          String    @map("order_id") @db.Uuid
+  orderItemId      String    @map("order_item_id") @db.Uuid
+  fulfillmentType  String    @map("fulfillment_type")
+  expectedQuantity Int       @map("expected_quantity")
+  issuedQuantity   Int       @default(0) @map("issued_quantity")
+  status           String
+  attemptCount     Int       @default(0) @map("attempt_count")
+  lastError        String?   @map("last_error")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant         Merchant  @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  order            Order     @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  orderItem        OrderItem @relation(fields: [orderItemId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@unique([orderItemId, fulfillmentType])
+  @@index([merchantId, status])
+  @@map("fulfillment_record")
+}
+
+model Voucher {
+  id                       String                  @id @default(uuid()) @db.Uuid
+  voucherNo                String                  @unique @map("voucher_no")
+  merchantId               String                  @map("merchant_id") @db.Uuid
+  brandId                  String                  @map("brand_id") @db.Uuid
+  orderId                  String                  @map("order_id") @db.Uuid
+  orderItemId              String                  @map("order_item_id") @db.Uuid
+  campaignId               String                  @map("campaign_id") @db.Uuid
+  campaignVersionId        String                  @map("campaign_version_id") @db.Uuid
+  productVersionId         String                  @map("product_version_id") @db.Uuid
+  purchaserConsumerId      String                  @map("purchaser_consumer_id") @db.Uuid
+  holderConsumerId         String                  @map("holder_consumer_id") @db.Uuid
+  issuedSequence           Int                     @map("issued_sequence")
+  status                   VoucherStatus
+  validFrom                DateTime                @map("valid_from") @db.Timestamptz(6)
+  validUntil               DateTime                @map("valid_until") @db.Timestamptz(6)
+  usageRuleSnapshotJson    Json                    @map("usage_rule_snapshot_json") @db.JsonB
+  refundPolicySnapshotJson Json                    @map("refund_policy_snapshot_json") @db.JsonB
+  expiryPolicySnapshotJson Json                    @map("expiry_policy_snapshot_json") @db.JsonB
+  redeemCodeHash           String                  @map("redeem_code_hash")
+  redeemedStoreId          String?                 @map("redeemed_store_id") @db.Uuid
+  redeemedAt               DateTime?               @map("redeemed_at") @db.Timestamptz(6)
+  version                  Int                     @default(1)
+  createdAt                DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant                 Merchant                @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  brand                    Brand                   @relation(fields: [brandId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  order                    Order                   @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  orderItem                OrderItem               @relation(fields: [orderItemId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  campaign                 GroupBuyCampaign        @relation(fields: [campaignId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  campaignVersion          GroupBuyCampaignVersion @relation(fields: [campaignVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  productVersion           ProductVersion          @relation(fields: [productVersionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  purchaser                Consumer                @relation("VoucherPurchaser", fields: [purchaserConsumerId], references: [id], onDelete: Restrict)
+  holder                   Consumer                @relation("VoucherHolder", fields: [holderConsumerId], references: [id], onDelete: Restrict)
+  redeemedStore            Store?                  @relation("VoucherRedeemedStore", fields: [redeemedStoreId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  redemptions              Redemption[]
+  redemptionReversals      RedemptionReversal[]
+  refundItems              RefundItem[]
+
+  @@unique([orderItemId, issuedSequence])
+  @@unique([id, merchantId])
+  @@index([merchantId, holderConsumerId, status])
+  @@index([merchantId, campaignId, status])
+  @@index([redeemCodeHash])
+  @@map("voucher")
+}
+
+model Redemption {
+  id             String               @id @default(uuid()) @db.Uuid
+  redemptionNo   String               @unique @map("redemption_no")
+  merchantId     String               @map("merchant_id") @db.Uuid
+  voucherId      String               @map("voucher_id") @db.Uuid
+  orderId        String               @map("order_id") @db.Uuid
+  storeId        String               @map("store_id") @db.Uuid
+  staffId        String               @map("staff_id") @db.Uuid
+  redeemMethod   RedemptionMethod     @map("redeem_method")
+  status         RedemptionStatus
+  requestId      String               @map("request_id")
+  idempotencyKey String               @map("idempotency_key")
+  startedAt      DateTime             @default(now()) @map("started_at") @db.Timestamptz(6)
+  confirmedAt    DateTime?            @map("confirmed_at") @db.Timestamptz(6)
+  failedAt       DateTime?            @map("failed_at") @db.Timestamptz(6)
+  merchant       Merchant             @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  voucher        Voucher              @relation(fields: [voucherId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  order          Order                @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  store          Store                @relation(fields: [storeId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  staff          Staff                @relation(fields: [staffId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  reversals      RedemptionReversal[]
+
+  @@unique([merchantId, idempotencyKey])
+  @@unique([voucherId], map: "redemption_voucher_success_key", where: raw("status = 'SUCCESS'"))
+  @@unique([id, merchantId])
+  @@index([merchantId, storeId, confirmedAt])
+  @@map("redemption")
+}
+
+model RedemptionReversal {
+  id              String     @id @default(uuid()) @db.Uuid
+  merchantId      String     @map("merchant_id") @db.Uuid
+  redemptionId    String     @map("redemption_id") @db.Uuid
+  voucherId       String     @map("voucher_id") @db.Uuid
+  requestedByType String     @map("requested_by_type")
+  requestedById   String     @map("requested_by_id") @db.Uuid
+  approvedByType  String?    @map("approved_by_type")
+  approvedById    String?    @map("approved_by_id") @db.Uuid
+  reasonCode      String     @map("reason_code")
+  reasonText      String?    @map("reason_text")
+  status          String
+  requestedAt     DateTime   @default(now()) @map("requested_at") @db.Timestamptz(6)
+  approvedAt      DateTime?  @map("approved_at") @db.Timestamptz(6)
+  completedAt     DateTime?  @map("completed_at") @db.Timestamptz(6)
+  rejectedAt      DateTime?  @map("rejected_at") @db.Timestamptz(6)
+  merchant        Merchant   @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  redemption      Redemption @relation(fields: [redemptionId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  voucher         Voucher    @relation(fields: [voucherId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@index([merchantId, status, requestedAt])
+  @@map("redemption_reversal")
+}
+
+model Refund {
+  id               String        @id @default(uuid()) @db.Uuid
+  refundNo         String        @unique @map("refund_no")
+  merchantId       String        @map("merchant_id") @db.Uuid
+  orderId          String        @map("order_id") @db.Uuid
+  paymentId        String        @map("payment_id") @db.Uuid
+  consumerId       String        @map("consumer_id") @db.Uuid
+  refundType       RefundType    @map("refund_type")
+  status           RefundStatus
+  amount           BigInt        @db.BigInt
+  currency         String        @db.Char(3)
+  reasonCode       String        @map("reason_code")
+  reasonText       String?       @map("reason_text")
+  providerRefundId String?       @unique @map("provider_refund_id")
+  requestedByType  String        @map("requested_by_type")
+  requestedById    String        @map("requested_by_id") @db.Uuid
+  approvedByType   String?       @map("approved_by_type")
+  approvedById     String?       @map("approved_by_id") @db.Uuid
+  idempotencyKey   String        @map("idempotency_key")
+  version          Int           @default(1)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  succeededAt      DateTime?     @map("succeeded_at") @db.Timestamptz(6)
+  merchant         Merchant      @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  order            Order         @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  payment          Payment       @relation(fields: [paymentId, orderId, merchantId], references: [id, orderId, merchantId], onDelete: Restrict, map: "refund_payment_order_merchant_fkey")
+  consumer         Consumer      @relation(fields: [consumerId], references: [id], onDelete: Restrict)
+  items            RefundItem[]
+  feeReversals     FeeReversal[]
+
+  @@unique([merchantId, idempotencyKey])
+  @@unique([id, merchantId])
+  @@index([merchantId, paymentId, status])
+  @@index([merchantId, status, createdAt])
+  @@map("refund")
+}
+
+model RefundItem {
+  id                        String                    @id @default(uuid()) @db.Uuid
+  refundId                  String                    @map("refund_id") @db.Uuid
+  merchantId                String                    @map("merchant_id") @db.Uuid
+  orderItemId               String                    @map("order_item_id") @db.Uuid
+  voucherId                 String                    @map("voucher_id") @db.Uuid
+  refundAmount              BigInt                    @map("refund_amount") @db.BigInt
+  voucherStatusBeforeRefund VoucherStatusBeforeRefund @map("voucher_status_before_refund")
+  merchant                  Merchant                  @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  refund                    Refund                    @relation(fields: [refundId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  orderItem                 OrderItem                 @relation(fields: [orderItemId, merchantId], references: [id, merchantId], onDelete: Restrict)
+  voucher                   Voucher                   @relation(fields: [voucherId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@unique([refundId, voucherId])
+  @@index([merchantId, voucherId])
+  @@map("refund_item")
+}
+
+model OrderEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  merchantId  String   @map("merchant_id") @db.Uuid
+  orderId     String   @map("order_id") @db.Uuid
+  eventType   String   @map("event_type")
+  payloadJson Json?    @map("payload_json") @db.JsonB
+  occurredAt  DateTime @default(now()) @map("occurred_at") @db.Timestamptz(6)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  order       Order    @relation(fields: [orderId, merchantId], references: [id, merchantId], onDelete: Restrict)
+
+  @@index([merchantId, orderId, occurredAt])
+  @@map("order_event")
+}
+
+model EventOutbox {
+  id            String            @id @default(uuid()) @db.Uuid
+  merchantId    String?           @map("merchant_id") @db.Uuid
+  eventType     String            @map("event_type")
+  aggregateType String            @map("aggregate_type")
+  aggregateId   String            @map("aggregate_id") @db.Uuid
+  payloadJson   Json              @map("payload_json") @db.JsonB
+  status        EventOutboxStatus @default(PENDING)
+  attemptCount  Int               @default(0) @map("attempt_count")
+  nextAttemptAt DateTime?         @map("next_attempt_at") @db.Timestamptz(6)
+  createdAt     DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  processedAt   DateTime?         @map("processed_at") @db.Timestamptz(6)
+  merchant      Merchant?         @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@index([status, nextAttemptAt, createdAt])
+  @@index([merchantId, aggregateType, aggregateId])
+  @@map("event_outbox")
+}
+
+model ReviewCase {
+  id            String    @id @default(uuid()) @db.Uuid
+  targetType    String    @map("target_type")
+  targetId      String    @map("target_id") @db.Uuid
+  targetVersion Int?      @map("target_version")
+  reviewType    String    @map("review_type")
+  status        String
+  riskLevel     String    @map("risk_level")
+  submittedBy   String    @map("submitted_by") @db.Uuid
+  reviewedBy    String?   @map("reviewed_by") @db.Uuid
+  result        String?
+  reason        String?
+  note          String?
+  submittedAt   DateTime  @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt    DateTime? @map("reviewed_at") @db.Timestamptz(6)
+
+  @@index([targetType, targetId, targetVersion])
+  @@index([status, submittedAt])
+  @@map("review_case")
+}
+
+model RiskRule {
+  id         String      @id @default(uuid()) @db.Uuid
+  scene      RiskScene
+  action     RiskAction
+  ruleCode   String      @unique @map("rule_code")
+  configJson Json        @map("config_json") @db.JsonB
+  status     String
+  priority   Int         @default(0)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  events     RiskEvent[]
+
+  @@index([scene, status, priority])
+  @@map("risk_rule")
+}
+
+model RiskEvent {
+  id          String     @id @default(uuid()) @db.Uuid
+  merchantId  String?    @map("merchant_id") @db.Uuid
+  riskRuleId  String?    @map("risk_rule_id") @db.Uuid
+  scene       RiskScene
+  action      RiskAction
+  targetType  String     @map("target_type")
+  targetId    String?    @map("target_id") @db.Uuid
+  riskContext Json       @map("risk_context") @db.JsonB
+  status      String
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant    Merchant?  @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  riskRule    RiskRule?  @relation(fields: [riskRuleId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, scene, createdAt])
+  @@index([targetType, targetId])
+  @@map("risk_event")
+}
+
+model ExceptionRecord {
+  id                       String                   @id @default(uuid()) @db.Uuid
+  exceptionNo              String                   @unique @map("exception_no")
+  merchantId               String?                  @map("merchant_id") @db.Uuid
+  type                     ExceptionType
+  targetType               String                   @map("target_type")
+  targetId                 String?                  @map("target_id") @db.Uuid
+  status                   String
+  detailsJson              Json                     @map("details_json") @db.JsonB
+  createdAt                DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt               DateTime?                @map("resolved_at") @db.Timestamptz(6)
+  merchant                 Merchant?                @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  compensationJobs         CompensationJob[]
+  reconciliationMismatches ReconciliationMismatch[]
+
+  @@index([merchantId, status, createdAt])
+  @@index([type, status])
+  @@map("exception_record")
+}
+
+model CompensationJob {
+  id                String           @id @default(uuid()) @db.Uuid
+  jobType           String           @map("job_type")
+  targetType        String           @map("target_type")
+  targetId          String           @map("target_id") @db.Uuid
+  status            String
+  idempotencyKey    String           @unique @map("idempotency_key")
+  attemptCount      Int              @default(0) @map("attempt_count")
+  maxAttempts       Int              @map("max_attempts")
+  nextRetryAt       DateTime?        @map("next_retry_at") @db.Timestamptz(6)
+  lastError         String?          @map("last_error")
+  exceptionRecordId String?          @map("exception_record_id") @db.Uuid
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  exceptionRecord   ExceptionRecord? @relation(fields: [exceptionRecordId], references: [id], onDelete: Restrict)
+
+  @@index([status, nextRetryAt])
+  @@map("compensation_job")
+}
+
+model ReconciliationRun {
+  id          String                   @id @default(uuid()) @db.Uuid
+  type        ReconciliationType
+  status      String
+  startedAt   DateTime                 @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime?                @map("completed_at") @db.Timestamptz(6)
+  mismatches  ReconciliationMismatch[]
+
+  @@index([type, startedAt])
+  @@map("reconciliation_run")
+}
+
+model ReconciliationMismatch {
+  id                  String            @id @default(uuid()) @db.Uuid
+  reconciliationRunId String            @map("reconciliation_run_id") @db.Uuid
+  entityType          String            @map("entity_type")
+  entityId            String            @map("entity_id") @db.Uuid
+  expectedJson        Json              @map("expected_json") @db.JsonB
+  actualJson          Json              @map("actual_json") @db.JsonB
+  status              String
+  exceptionRecordId   String?           @map("exception_record_id") @db.Uuid
+  createdAt           DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  run                 ReconciliationRun @relation(fields: [reconciliationRunId], references: [id], onDelete: Restrict)
+  exceptionRecord     ExceptionRecord?  @relation(fields: [exceptionRecordId], references: [id], onDelete: Restrict)
+
+  @@index([reconciliationRunId, status])
+  @@index([entityType, entityId])
+  @@map("reconciliation_mismatch")
+}
+
+model AuditLog {
+  id            String    @id @default(uuid()) @db.Uuid
+  actorType     String    @map("actor_type")
+  actorId       String?   @map("actor_id") @db.Uuid
+  merchantId    String?   @map("merchant_id") @db.Uuid
+  action        String
+  targetType    String    @map("target_type")
+  targetId      String?   @map("target_id") @db.Uuid
+  beforeJson    Json?     @map("before_json") @db.JsonB
+  afterJson     Json?     @map("after_json") @db.JsonB
+  reason        String?
+  requestId     String    @map("request_id")
+  correlationId String    @map("correlation_id")
+  metadataJson  Json?     @map("metadata_json") @db.JsonB
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant      Merchant? @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, createdAt])
+  @@index([targetType, targetId, createdAt])
+  @@index([correlationId])
+  @@map("audit_log")
+}
+
+model SecurityEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  merchantId  String?   @map("merchant_id") @db.Uuid
+  eventType   String    @map("event_type")
+  actorType   String?   @map("actor_type")
+  actorId     String?   @map("actor_id") @db.Uuid
+  contextJson Json      @map("context_json") @db.JsonB
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  merchant    Merchant? @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, eventType, createdAt])
+  @@map("security_event")
+}
+
+model DisputeCase {
+  id          String   @id @default(uuid()) @db.Uuid
+  merchantId  String   @map("merchant_id") @db.Uuid
+  targetType  String   @map("target_type")
+  targetId    String   @map("target_id") @db.Uuid
+  status      String
+  detailsJson Json     @map("details_json") @db.JsonB
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, status, createdAt])
+  @@map("dispute_case")
+}
+
+model MerchantRiskInvestigation {
+  id         String   @id @default(uuid()) @db.Uuid
+  merchantId String   @map("merchant_id") @db.Uuid
+  status     String
+  reason     String
+  result     String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@index([merchantId, status])
+  @@map("merchant_risk_investigation")
+}
+
+model MerchantClearingCase {
+  id         String                 @id @default(uuid()) @db.Uuid
+  merchantId String                 @map("merchant_id") @db.Uuid
+  status     String
+  reason     String
+  createdAt  DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  merchant   Merchant               @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+  items      MerchantClearingItem[]
+
+  @@index([merchantId, status])
+  @@map("merchant_clearing_case")
+}
+
+model MerchantClearingItem {
+  id             String               @id @default(uuid()) @db.Uuid
+  clearingCaseId String               @map("clearing_case_id") @db.Uuid
+  itemType       String               @map("item_type")
+  targetId       String               @map("target_id") @db.Uuid
+  status         String
+  detailsJson    Json?                @map("details_json") @db.JsonB
+  clearingCase   MerchantClearingCase @relation(fields: [clearingCaseId], references: [id], onDelete: Restrict)
+
+  @@index([clearingCaseId, status])
+  @@map("merchant_clearing_item")
+}
+
+model IntegrationHealth {
+  id              String                  @id @default(uuid()) @db.Uuid
+  merchantId      String?                 @map("merchant_id") @db.Uuid
+  integrationType String                  @map("integration_type")
+  targetId        String?                 @map("target_id") @db.Uuid
+  status          IntegrationHealthStatus
+  detailsJson     Json?                   @map("details_json") @db.JsonB
+  checkedAt       DateTime                @map("checked_at") @db.Timestamptz(6)
+  merchant        Merchant?               @relation(fields: [merchantId], references: [id], onDelete: Restrict)
+
+  @@unique([integrationType, targetId])
+  @@index([merchantId, status])
+  @@map("integration_health")
+}

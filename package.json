@@ -1,0 +1,45 @@
+{
+  "name": "saas-v1-platform",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SaaS V1 multi-tenant local group-buy platform monorepo.",
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11.22.0 <12"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter './apps/*' --if-present run dev",
+    "build": "pnpm --recursive --workspace-concurrency=1 --if-present run build",
+    "check:boundaries": "node scripts/check-import-boundaries.mjs",
+    "lint": "eslint . && pnpm check:boundaries",
+    "typecheck": "pnpm --recursive --if-present run typecheck",
+    "test": "pnpm --recursive --if-present run test",
+    "test:integration:database": "node scripts/run-database-integration.mjs",
+    "database:test:reset": "node scripts/run-database-integration.mjs --reset-only",
+    "rbac:seed": "pnpm --filter @saas/identity-access build && node scripts/seed-platform-rbac.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prisma:format": "prisma format",
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "dotenv": "^17.4.2",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "16.3.1",
+    "globals": "^16.5.0",
+    "prettier": "3.9.6",
+    "pg": "8.23.0",
+    "prisma": "^7.9.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "4.1.11"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@saas/database",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "generate": "pnpm --workspace-root prisma:generate",
+    "prebuild": "pnpm run generate",
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint .",
+    "pretypecheck": "pnpm run generate",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "pg": "^8.23.0"
+  }
+}

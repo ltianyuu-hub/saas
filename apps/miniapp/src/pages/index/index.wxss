@@ -1,0 +1,11 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  padding: 64rpx 48rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 700;
+}
